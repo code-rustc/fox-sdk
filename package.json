@@ -1,0 +1,302 @@
+{
+  "name": "bloomberg-data-license",
+  "version": "1.0.0",
+  "description": "# Overview [DATA&lt;GO&gt;](https://data.bloomberg.com) and [DL REST API](https://api.bloomberg.com/eap) are the web interfaces for the Bloomberg Data License Platform. The [Data License Platform Guide](https://developer.bloomberg.com/portal/products/dl?chapterId=5202&entityType=document) provides a general overview of the platform and its capabilities. DL REST API is the REST API for the Bloomberg Data License Platform, which powers [DATA&lt;GO&gt;](https://data.bloomberg.com).  You can use [DL REST API](https://api.bloomberg.com/eap) to access any capability or data that is accessible through [DATA&lt;GO&gt;](https://data.bloomberg.com): For example, you can automate the retrieval of bulk datasets and Bloomberg metadata or request, schedule, and retrieve custom datasets using reusable resources.  # Getting Started To get started with DL REST API, you must: - Review [Getting Started with DL via REST API](https://developer.bloomberg.com/portal/quickstarts/dl_rest_qs) - Register your application, obtain a set of credentials for your application, and add your IP address to the allowlist at [DATA&lt;GO&gt;](https://data.bloomberg.com/)   - [For DL Per Security Accounts](https://data.bloomberg.com/per-security/delivery-method)   - [For DL Bulk Accounts](https://data.bloomberg.com/bulk/delivery-method) - Download sample code at [https://developer.bloomberg.com/portal/downloads](https://developer.bloomberg.com/portal/downloads?releaseStatus=current#data_license_rest_api_code_samples) - Use the sample code to connect to the [entrypoint](#tag/entrypoint) at https://api.bloomberg.com/eap/ - Explore [DATA&lt;GO&gt;](https://data.bloomberg.com/), a web UI that is powered by DL REST API, to get familiar with DL REST API concepts  ## Authentication and Authorization  ### OAuth 2.0 Authentication (Recommended) As per the [OAuth 2.0 Authentication Framework](https://datatracker.ietf.org/doc/html/rfc6749), you can use a [Client Credentials Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.4) (i.e., `grant_type = client_credentials`) to authenticate your Data License (DL) REST API calls. For more information, see [Data License - REST API Code Samples](https://developer.bloomberg.com/portal/downloads?releaseStatus=current#data_license_rest_api_code_samples) and [DL via Rest API](https://developer.bloomberg.com/portal/quickstarts/dl_rest_qs?chapterId=5635).  ### Supported JWT Authentication (Not Recommended) Alternatively, you can include a [JSON Web Token (JWT)](https://jwt.io/) header, unique to and matching the request. The token must be signed with a valid Data License credential (see [Data License - REST API Code Samples](https://developer.bloomberg.com/portal/downloads?releaseStatus=current#data_license_rest_api_code_samples)). The Data License Platform verifies that the token corresponds to the endpoint being requested and is unique. The Platform also checks the credential used to sign the token to verify access rights to the resource being requested.  Credentials and permitted IP address allowlists are managed through https://data.bloomberg.com/.  The credentials must be: 1. Issued by a Data License account with active Bloomberg Data License agreements 2. Unexpired 3. Configured with a permitted IP allowlist entry for the address issuing the request  DL REST API supports the server mode authentication flow. Hybrid and device modes are not supported.  To learn more about DL REST API authentication, navigate to: - For Postman&reg;: [DL via REST API > Postman Quick Start > Get Connected](https://developer.bloomberg.com/portal/quickstarts/dl_rest_qs?chapterId=5852&entityType=document#postman_quick_start-get_connected) - For Python: [DL via REST API > Python Quick Start > Get Connected](https://developer.bloomberg.com/portal/quickstarts/dl_rest_qs?chapterId=5635&entityType=document#python_quick_start-get_connected)  ## Version Headers Every request to DL REST API must include an `api-version` header (set to `api-version` to 2 for the version described by this specification).  This is the only supported value for `api-version`.  Requests that do not set the `api-version` header, and requests that provide an unsupported `api-version` header value will be rejected with a 400 response code. Response headers include a `latest-api-version` which returns the latest available version of the api.  ## Pagination The DL REST API leverages two different pagination strategies, Keyset-based pagination and View-based pagination. Documentation at the endpoint level specifies which pagination strategy is supported.  ### Keyset-based pagination * Keyset paginated result sets use the `next` property in the response to indicate the next page of results. * If the `next` property is empty, there are no further results to display. * If the `next` property contains a value, append this to the URL using the `next` query param to fetch the next page of results. * Use the `limit` query parameter to set the number of results per page. This defaults to 100 if not supplied.  ### View-based pagination * Paging sequence bounds for paged collections will always be indicated with `first` and `last` links (either in the LDP-Paging headers or in the Hydra PartialCollectionView). * Within a paging sequence, a `next` link will be present on all pages except the last and a `prev` link will be present on all pages except the first, to aid sequential traversal. * Pages beyond the paging sequence bounds will return a response with an empty collection. * Pages beyond the paging sequence bounds will not have `next` or `prev` links. * Pages that support the `pageSize` query parameter permit a user defined `pageSize`. ## Redirects * While Bloomberg Data License makes every effort to maintain stable URLs, API users should receive and process HTTP redirect codes, and must specify a header to determine the version of the API to which they are coding (this document describes version 2) . ## Rate Limiting The [Account-level](https://developer.bloomberg.com/portal/products/dl?chapterId=4565#data_go_and_dl_rest_api-access-bloomberg_data_accounts) rate limits for each endpoint are: * For `GET` requests: **2000** requests per minute. * For `POST`, `PUT`, `PATCH`, or `DELETE` requests: **200** requests per minute.  **NOTE**: If you exceed these limits, your request is rejected with a `429` HTTP error code.  # New Features  ## Field List Limit Increase  We now support up to 500 fields in a single Per security request for the following request types: - DataRequest - HistoryRequest - BvalSnapshotRequest - EntityRequest  ## Products and Packages Endpoints  The new `/products` and `/package` endpoints enable programmatic exploration of our entire bulk data catalog. These endpoints enable you to identify relevant bulk data products based on your use case and provide access to rich package metadata through simple API calls.  ## Content Endpoints  ### Bulk and History Cubes  The new [/content/bulk/](https://developer.bloomberg.com/portal/apis/data_license_rest_api/reference#tag/Bulk) and [/content/history/cubes](https://developer.bloomberg.com/portal/apis/data_license_rest_api/reference#tag/History-Cubes) endpoints provide a powerful 'list and filter' paradigm consistent with the Per Security [/content/responses](https://developer.bloomberg.com/portal/apis/data_license_rest_api/reference#tag/responses) endpoint for simple, flexible, fast and efficient retrieval of Bulk package content. Key features include: - A single, flat namespace for all existing Bulk files along with the new Parquet files. The key features of the new Parquet files are:   - Mnemonic field IDs: Datasets include standard, stable mnemonic IDs instead of clean names for ease of use.   - Standard delivery window adherence: All Parquet files adhere to the standard delivery windows for bulk datasets.   - Consolidated content: Parent datasets include include child datasets with bulk format fields in a single file.   - Versions: History Cubes include historical versions in a single cube. - Flexibile filtering of Bulk files using `packageCodes`, `datasetNames`, `fileExtensions`, `snapshotStartDate`, and `snapshotEndDate`. - Consistent output file names and notifications across the REST API and Cloud delivery mechanisms for simple and reliable syncing. - Enhanced metadata for Bulk files including etags and MD5 digests.  ### Responses  The new [/content/responses](https://developer.bloomberg.com/portal/apis/data_license_rest_api/reference#tag/responses) endpoint provides maximum flexibility with minimal effort for simple and efficient content retrieval. Key features include: * Faster and more efficient data retrieval via a single, flat namespace for Per Security output files; an alternative to the `datasets/snapshot/distributions` hierarchy. * Response filtering by `requestName`, `requestIdentifier`, `snapshotStartDateTime`, and `snapshotEndDateTime` for simplified tracking from a given request to the corresponding output file. * Consistent output file names across the REST API and Cloud delivery mechanisms for simple and reliable syncing.  ### DL Blueprints  A DL Blueprint is the canonical source of metadata that describes every aspect of a Bulk product. It is available to anyone with the relevant subscription. The `/content/blueprints` endpoint allows you to: * List the Blueprints that are available to download for all your subscribed packages. * Download the the Blueprint JSON.  ## Enhanced Field Metadata  ### Field Identifiers  You can now retrieve field metadata by field id (e.g. PR005), mnemonic (old or new) or clean name - (.e.g `/eap/catalogs/bbg/fields/PR005`, `/eap/catalogs/bbg/fields/PX_LAST` or `/eap/catalogs/bbg/fields/pxLast`).  ### Enumerations  Enumeration (enum) data is now available through the DL REST API for all API users to:  * Retrieve all possible return-values for a enumerated field through `/eap/catalogs/bbg/fields/{field}/enumValues`.  For advanced use-cases you can also:  * List all enumerations through `/eap/catalogs/bbg/enums/`. * Find the enumerations for a field through `/eap/catalogs/bbg/fields/{field}/enums`. * Find the fields associated with an enumeration through `/eap/catalogs/bbg/enums/{enum}/fields`.  ## OAuth 2.0 Authentication Per the [OAuth 2.0 Authentication Framework](https://datatracker.ietf.org/doc/html/rfc6749), you can now use a [Client Credentials Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.4) (i.e., `grant_type = client_credentials`) to authenticate your Data License (DL) REST API calls. For more: [DL Rest API > Developer Quick Start](https://developer.bloomberg.com/portal/quickstarts/dl_rest_qs?chapterId=5635). Key benefits include: * Full compatibility with your existing credentials and popular tools like Postman&reg; and Curl. * Simplified [Data License - REST API Code Samples](https://developer.bloomberg.com/portal/downloads?releaseStatus=current#data_license_rest_api_code_samples) with open source libraries, independent of proprietary Bloomberg libraries (i.e., `bwslib`). * Seamless authentication in the language of your choice, without any custom authentication scripting.  # Features  ## Data Requests Request point in time outputs for a user-defined set of fields and instruments from the DL REST API by POSTing a resource of type `DataRequest` to [`/catalogs/{catalog}/requests/`](#operation/postRequest).  ## History Requests Request a historic time series over a specified date range and period through the DL REST API by POSTing a resource of type `HistoryRequest` to [`/catalogs/{catalog}/requests/`](#operation/postRequest).  ## Corporate Actions Requests Request current and future corporate actions through DL REST API by POSTing a resource of type `ActionsRequest` to [`/catalogs/{catalog}/requests/``](#operation/postRequest). - Request corporate actions that will become effective up to two years in the future or that were recorded by Bloomberg up to seven days prior to request execution. - Corporate action requests do not require a `FieldList` - all available actions for the security and for its issuer are returned. - Security level overrides are ignored by corporate actions requests.  ## BVAL Requests Bloomberg's BVAL evaluated pricing service provides accurate and defensible pricing of fixed income and derivatives instruments. If you are a subscriber to the BVAL service, you can request a BVAL Snapshot through DL REST API by POSTing a resource of type `BvalSnapshotRequest` to [`/catalogs/{catalog}/requests/`](#operation/postRequest). You can expect the response to be delivered according to the `snapshotTier` you select. You should expect a Tier 1 response within 45 minutes of the snapshot time, and a Tier 2 response within 2.5 hours. You can also request BVAL prices after the snapshot time, through a `DataRequest`, using the pricing sources indicated in the table below.  ### BVAL Snapshots BVAL Snapshots are available at the following snapshot times and can be specified in a `BvalSnapshotRequest` or `DataRequest`.  New York Early Close pricing is available on SIFMA Recommended Early Close days. The New York 15:00 snapshot will run at 13:00, and the New York 16:00 at 14:00. Enabled clients will receive their datasets at earlier times if they follow the submission guidelines below. Please contact your BVAL Sales representative to get enabled for Early Close pricing.  |Snapshot Time|Snapshot Timezone|SIFMA Early Close Snapshot Time|T1 Request By|T2 Request By|T1 Response By|T2 Response By| | --- | --- | --- | --- | --- | --- | --- | |15:00|America/New_York|13:00|17:30|15:00|15:45|18:00| |16:00|America/New_York|14:00|18:30|16:00|16:45|19:00| |12:00|Europe/London| |14:30|12:00|12:45|15:00| |15:00|Europe/London| |17:30|15:00|15:45|18:00| |16:15|Europe/London| |18:45|16:15|17:00|19:15| |15:00|Asia/Tokyo| |17:30|15:00|15:45|18:00| |16:00|Asia/Tokyo| |18:30|16:00|16:45|19:00| |17:00|Asia/Tokyo| |19:30|17:00|17:45|20:00| |17:00|Asia/Shanghai| |19:30|17:00|17:45|20:00| |17:00|Australia/Sydney| |19:30|17:00|17:45|20:00|  BVAL snapshots are available up to a cutoff time: The cutoff time is defined as 2.5 hours after the snapshot for a Tier 1 Request, and the snapshot time itself for a Tier 2 request.  ### BVAL Pricing Source (PCS) Requests The following pricing sources can also be specified in a `DataRequest`.  |Pricing Source|Comments|Snapshot Time|Snapshot Timezone| | --- | --- | --- | --- | | BVN3 | | 15:00 | America/New_York | | BVN4 | | 16:00 | America/New_York | | BL12 | | 12:00 | Europe/London | | BVL3 | | 15:00 | Europe/London | | BVL4 | | 16:15 | Europe/London | | BVT3 | | 15:00 | Asia/Tokyo | | BVT4 | | 16:00 | Asia/Tokyo | | BVT5 | | 17:00 | Asia/Tokyo | | BSH5 | | 17:00 | Asia/Shanghai | | BVS5 | | 17:00 | Australia/Sydney | | BVAL | Latest available BVAL Evaluated Price. | latest | any | | BVIC | Latest available BVAL Index Convention Price. |latest | any |  ## Pricing Snapshot Requests Bloomberg's Pricing Snapshots provide a precise point in time snapshot of market prices for any instrument, available at 15 minute intervals throughout the day. You can request a Pricing Snapshot through the DL REST API by POSTing a resource of type PricingSnapshotRequest to [`/catalogs/{catalog}/requests/`](#operation/postRequest) up to 15 minutes prior to the snapshot time. The response will be delivered shortly after the snapshot time, subject to an embargo period for the requested instruments (see [Exchange Delay](https://data.bloomberg.com/catalogs/bbg/fields/exchangeDelay/)).  ## Tick History Requests Bloomberg's Tick History offering provides intraday prices for executed trades, bid/ask quotes, or both. You can submit requests for either ticks or bars (i.e., an open, high, low, and close price per period) for any time or date range. Create a Tick History request through the DL REST API by POSTing a resource of type TickHistoryRequest to [`/catalogs/{catalog}/requests/`](#operation/postRequest)  ## Entity Data Requests Bloomberg's Entity Data provides legal entity data for public and private companies, funds, government agencies, and municipalities. You can request Entity Data through the DL REST API by POSTing a resource of type EntityRequest to [`/catalogs/{catalog}/requests/`](#operation/postRequest). * Legal Entity Identifiers (LEI) are supported for Entity Requests. * Field lists are strongly typed to match the Entity Data request type. * Security level overrides are ignored by Entity Requests.  ## Output Formats Each program supports a selection of standard (CSV, JSON, Parquet) and proprietary (BBG) output formats.  |Request @type|CSV|JSON|BBG|Parquet| |-|-|-|-|-| |DataRequest|✅|✅|✅|| |HistoryRequest|✅|✅|✅|| |BvalSnapshotRequest|✅|✅|✅|| |ActionsRequest||✅|✅|| |EntityRequest|✅|✅|✅|| |PricingSnapshotRequest|✅|✅|✅|| |TickHistoryRequest * |✅|||✅|  \\* TickHistoryRequest outputs are delivered in either `tar` or `zip` archive format.  ## Push Notifications To avoid having to poll the REST APIs for new distributions, the DL REST API provides a [W3C Server Sent Event Stream](https://html.spec.whatwg.org/multipage/server-sent-events.html) to provide push notifications to connected clients over HTTP when new files are available for download. Subscribe to the event stream at [`/notifications/content/responses`](#tag/Notifications/operation/getContentSse) for Per Security and [`/notifications/content/bulk`](#tag/Notifications/operation/getContentSse) for Bulk file deliveries. We also offer the continuity [`/notifications/sse`](#tag/Notifications/operation/getSse) endpoint to receive push notifications for the [Datasets](#tag/Datasets) endpoint.  ## Bulk Format Fields A bulk format field defines a nested or embedded schema. Bloomberg represents rich content that cannot be encoded in a single scalar value using bulk format fields. Bulk Format fields are now available in JSON, CSV and Bloomberg file formats. See [here](https://developer.bloomberg.com/portal/documents/per_security/getting_started_with_rest_api/1185__distributions_and_file_formats#processing_bulk_fields) for more details to understand bulk format fields and how they are encoded in each of the file formats.  # API Specification This is the specification for the Bloomberg Data License DL REST API ([DL REST API](https://api.bloomberg.com/eap)).",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "browser": "./dist/index.js",
+  "unpkg": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "tsc --noEmit",
+    "build": "tsup-node src/index.ts src/services/archives/index.ts src/services/auth/index.ts src/services/blueprints/index.ts src/services/bulk-ongoing/index.ts src/services/bulk-samples-ongoing/index.ts src/services/catalogs/index.ts src/services/datasets/index.ts src/services/distributions/index.ts src/services/entrypoint/index.ts src/services/enums-fields/index.ts src/services/field-lists/index.ts src/services/fields/index.ts src/services/history-cubes/index.ts src/services/methods/index.ts src/services/notices/index.ts src/services/notifications/index.ts src/services/ontology/index.ts src/services/packages/index.ts src/services/products/index.ts src/services/publishers/index.ts src/services/requests/index.ts src/services/responses/index.ts src/services/snapshots/index.ts src/services/triggers/index.ts src/services/universes/index.ts --format cjs,esm --clean && tsc --project tsconfig.types.json && node -e \"const fs=require('fs');const path=require('path');function fx(s,d){const dir=path.dirname(s);const c=fs.readFileSync(s,'utf8');const p=c.replace(/((?:from|import)\\s*\\(?\\s*[\\x27\\x22])(\\.\\.?\\/[^\\x27\\x22]+?)([\\x27\\x22])/g,(m,a,b,e)=>{if(/\\.[a-zA-Z0-9]+$/.test(b))return m;const suffix=fs.existsSync(path.join(dir,b)+'.d.ts')?'.js':'/index.js';return a+b+suffix+e});fs.writeFileSync(d,p)};fx('dist/index.d.ts','dist/index.d.mts');fx('dist/services/archives/index.d.ts','dist/services/archives/index.d.mts');fx('dist/services/auth/index.d.ts','dist/services/auth/index.d.mts');fx('dist/services/blueprints/index.d.ts','dist/services/blueprints/index.d.mts');fx('dist/services/bulk-ongoing/index.d.ts','dist/services/bulk-ongoing/index.d.mts');fx('dist/services/bulk-samples-ongoing/index.d.ts','dist/services/bulk-samples-ongoing/index.d.mts');fx('dist/services/catalogs/index.d.ts','dist/services/catalogs/index.d.mts');fx('dist/services/datasets/index.d.ts','dist/services/datasets/index.d.mts');fx('dist/services/distributions/index.d.ts','dist/services/distributions/index.d.mts');fx('dist/services/entrypoint/index.d.ts','dist/services/entrypoint/index.d.mts');fx('dist/services/enums-fields/index.d.ts','dist/services/enums-fields/index.d.mts');fx('dist/services/field-lists/index.d.ts','dist/services/field-lists/index.d.mts');fx('dist/services/fields/index.d.ts','dist/services/fields/index.d.mts');fx('dist/services/history-cubes/index.d.ts','dist/services/history-cubes/index.d.mts');fx('dist/services/methods/index.d.ts','dist/services/methods/index.d.mts');fx('dist/services/notices/index.d.ts','dist/services/notices/index.d.mts');fx('dist/services/notifications/index.d.ts','dist/services/notifications/index.d.mts');fx('dist/services/ontology/index.d.ts','dist/services/ontology/index.d.mts');fx('dist/services/packages/index.d.ts','dist/services/packages/index.d.mts');fx('dist/services/products/index.d.ts','dist/services/products/index.d.mts');fx('dist/services/publishers/index.d.ts','dist/services/publishers/index.d.mts');fx('dist/services/requests/index.d.ts','dist/services/requests/index.d.mts');fx('dist/services/responses/index.d.ts','dist/services/responses/index.d.mts');fx('dist/services/snapshots/index.d.ts','dist/services/snapshots/index.d.mts');fx('dist/services/triggers/index.d.ts','dist/services/triggers/index.d.mts');fx('dist/services/universes/index.d.ts','dist/services/universes/index.d.mts')\"",
+    "prepublishOnly": "chmod +x ./scripts/prepublish.sh && ./scripts/prepublish.sh && npm run build",
+    "test-example": "cd examples && tsc --noEmit"
+  },
+  "keywords": [
+    "typescript",
+    "sdk",
+    "api",
+    "client"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "author": "",
+  "devDependencies": {
+    "typescript": "5.3.3",
+    "@types/node": "^22.14.0",
+    "tsup": "^6.7.0"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./archives": {
+      "require": {
+        "types": "./dist/services/archives/index.d.ts",
+        "default": "./dist/services/archives/index.js"
+      },
+      "import": {
+        "types": "./dist/services/archives/index.d.mts",
+        "default": "./dist/services/archives/index.mjs"
+      }
+    },
+    "./auth": {
+      "require": {
+        "types": "./dist/services/auth/index.d.ts",
+        "default": "./dist/services/auth/index.js"
+      },
+      "import": {
+        "types": "./dist/services/auth/index.d.mts",
+        "default": "./dist/services/auth/index.mjs"
+      }
+    },
+    "./blueprints": {
+      "require": {
+        "types": "./dist/services/blueprints/index.d.ts",
+        "default": "./dist/services/blueprints/index.js"
+      },
+      "import": {
+        "types": "./dist/services/blueprints/index.d.mts",
+        "default": "./dist/services/blueprints/index.mjs"
+      }
+    },
+    "./bulk-ongoing": {
+      "require": {
+        "types": "./dist/services/bulk-ongoing/index.d.ts",
+        "default": "./dist/services/bulk-ongoing/index.js"
+      },
+      "import": {
+        "types": "./dist/services/bulk-ongoing/index.d.mts",
+        "default": "./dist/services/bulk-ongoing/index.mjs"
+      }
+    },
+    "./bulk-samples-ongoing": {
+      "require": {
+        "types": "./dist/services/bulk-samples-ongoing/index.d.ts",
+        "default": "./dist/services/bulk-samples-ongoing/index.js"
+      },
+      "import": {
+        "types": "./dist/services/bulk-samples-ongoing/index.d.mts",
+        "default": "./dist/services/bulk-samples-ongoing/index.mjs"
+      }
+    },
+    "./catalogs": {
+      "require": {
+        "types": "./dist/services/catalogs/index.d.ts",
+        "default": "./dist/services/catalogs/index.js"
+      },
+      "import": {
+        "types": "./dist/services/catalogs/index.d.mts",
+        "default": "./dist/services/catalogs/index.mjs"
+      }
+    },
+    "./datasets": {
+      "require": {
+        "types": "./dist/services/datasets/index.d.ts",
+        "default": "./dist/services/datasets/index.js"
+      },
+      "import": {
+        "types": "./dist/services/datasets/index.d.mts",
+        "default": "./dist/services/datasets/index.mjs"
+      }
+    },
+    "./distributions": {
+      "require": {
+        "types": "./dist/services/distributions/index.d.ts",
+        "default": "./dist/services/distributions/index.js"
+      },
+      "import": {
+        "types": "./dist/services/distributions/index.d.mts",
+        "default": "./dist/services/distributions/index.mjs"
+      }
+    },
+    "./entrypoint": {
+      "require": {
+        "types": "./dist/services/entrypoint/index.d.ts",
+        "default": "./dist/services/entrypoint/index.js"
+      },
+      "import": {
+        "types": "./dist/services/entrypoint/index.d.mts",
+        "default": "./dist/services/entrypoint/index.mjs"
+      }
+    },
+    "./enums-fields": {
+      "require": {
+        "types": "./dist/services/enums-fields/index.d.ts",
+        "default": "./dist/services/enums-fields/index.js"
+      },
+      "import": {
+        "types": "./dist/services/enums-fields/index.d.mts",
+        "default": "./dist/services/enums-fields/index.mjs"
+      }
+    },
+    "./field-lists": {
+      "require": {
+        "types": "./dist/services/field-lists/index.d.ts",
+        "default": "./dist/services/field-lists/index.js"
+      },
+      "import": {
+        "types": "./dist/services/field-lists/index.d.mts",
+        "default": "./dist/services/field-lists/index.mjs"
+      }
+    },
+    "./fields": {
+      "require": {
+        "types": "./dist/services/fields/index.d.ts",
+        "default": "./dist/services/fields/index.js"
+      },
+      "import": {
+        "types": "./dist/services/fields/index.d.mts",
+        "default": "./dist/services/fields/index.mjs"
+      }
+    },
+    "./history-cubes": {
+      "require": {
+        "types": "./dist/services/history-cubes/index.d.ts",
+        "default": "./dist/services/history-cubes/index.js"
+      },
+      "import": {
+        "types": "./dist/services/history-cubes/index.d.mts",
+        "default": "./dist/services/history-cubes/index.mjs"
+      }
+    },
+    "./methods": {
+      "require": {
+        "types": "./dist/services/methods/index.d.ts",
+        "default": "./dist/services/methods/index.js"
+      },
+      "import": {
+        "types": "./dist/services/methods/index.d.mts",
+        "default": "./dist/services/methods/index.mjs"
+      }
+    },
+    "./notices": {
+      "require": {
+        "types": "./dist/services/notices/index.d.ts",
+        "default": "./dist/services/notices/index.js"
+      },
+      "import": {
+        "types": "./dist/services/notices/index.d.mts",
+        "default": "./dist/services/notices/index.mjs"
+      }
+    },
+    "./notifications": {
+      "require": {
+        "types": "./dist/services/notifications/index.d.ts",
+        "default": "./dist/services/notifications/index.js"
+      },
+      "import": {
+        "types": "./dist/services/notifications/index.d.mts",
+        "default": "./dist/services/notifications/index.mjs"
+      }
+    },
+    "./ontology": {
+      "require": {
+        "types": "./dist/services/ontology/index.d.ts",
+        "default": "./dist/services/ontology/index.js"
+      },
+      "import": {
+        "types": "./dist/services/ontology/index.d.mts",
+        "default": "./dist/services/ontology/index.mjs"
+      }
+    },
+    "./packages": {
+      "require": {
+        "types": "./dist/services/packages/index.d.ts",
+        "default": "./dist/services/packages/index.js"
+      },
+      "import": {
+        "types": "./dist/services/packages/index.d.mts",
+        "default": "./dist/services/packages/index.mjs"
+      }
+    },
+    "./products": {
+      "require": {
+        "types": "./dist/services/products/index.d.ts",
+        "default": "./dist/services/products/index.js"
+      },
+      "import": {
+        "types": "./dist/services/products/index.d.mts",
+        "default": "./dist/services/products/index.mjs"
+      }
+    },
+    "./publishers": {
+      "require": {
+        "types": "./dist/services/publishers/index.d.ts",
+        "default": "./dist/services/publishers/index.js"
+      },
+      "import": {
+        "types": "./dist/services/publishers/index.d.mts",
+        "default": "./dist/services/publishers/index.mjs"
+      }
+    },
+    "./requests": {
+      "require": {
+        "types": "./dist/services/requests/index.d.ts",
+        "default": "./dist/services/requests/index.js"
+      },
+      "import": {
+        "types": "./dist/services/requests/index.d.mts",
+        "default": "./dist/services/requests/index.mjs"
+      }
+    },
+    "./responses": {
+      "require": {
+        "types": "./dist/services/responses/index.d.ts",
+        "default": "./dist/services/responses/index.js"
+      },
+      "import": {
+        "types": "./dist/services/responses/index.d.mts",
+        "default": "./dist/services/responses/index.mjs"
+      }
+    },
+    "./snapshots": {
+      "require": {
+        "types": "./dist/services/snapshots/index.d.ts",
+        "default": "./dist/services/snapshots/index.js"
+      },
+      "import": {
+        "types": "./dist/services/snapshots/index.d.mts",
+        "default": "./dist/services/snapshots/index.mjs"
+      }
+    },
+    "./triggers": {
+      "require": {
+        "types": "./dist/services/triggers/index.d.ts",
+        "default": "./dist/services/triggers/index.js"
+      },
+      "import": {
+        "types": "./dist/services/triggers/index.d.mts",
+        "default": "./dist/services/triggers/index.mjs"
+      }
+    },
+    "./universes": {
+      "require": {
+        "types": "./dist/services/universes/index.d.ts",
+        "default": "./dist/services/universes/index.js"
+      },
+      "import": {
+        "types": "./dist/services/universes/index.d.mts",
+        "default": "./dist/services/universes/index.mjs"
+      }
+    }
+  }
+}
